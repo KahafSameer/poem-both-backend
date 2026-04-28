@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BoothStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Booth {
+  id       String      @id @default(cuid()) // Changed to String for consistency
+  location String
+  theme    String
+  status   BoothStatus @default(ACTIVE)
+
+  boothCollections BoothAndCollection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Collection {
+  id   String @id @default(cuid()) // CUID (Collision-resistant Unique Identifier) Changed to String to match diagram (PK unique)
+  name String @unique
+
+  boothCollections BoothAndCollection[]
+  poems            Poem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BoothAndCollection {
+  boothId      String
+  collectionId String
+
+  booth      Booth      @relation(fields: [boothId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([boothId, collectionId]) // composite primary key
+  @@index([collectionId]) // index for foreign key lookups
+}
+
+model Poet {
+  id    String  @id @default(cuid())
+  name  String
+  bio   String?
+  image String? // nullable as shown in diagram
+
+  poems Poem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Poem {
+  id          String  @id @default(cuid())
+  name        String
+  poemNo      Int // Changed to int as shown in diagram
+  description String?
+  text        String
+
+  image String? // nullable as shown in diagram
+  audio String?
+
+  poetId       String
+  collectionId String
+
+  poet       Poet       @relation(fields: [poetId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([collectionId, poemNo]) // Ensure poem numbers are unique within a collection
+  @@index([poetId]) // index for foreign key lookups
+  @@index([collectionId]) // index for foreign key lookups
+}

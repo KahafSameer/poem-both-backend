@@ -1,0 +1,52 @@
+
+
+model Booth {
+  id        Int      @id @default(autoincrement())
+  location  String
+  theme     String
+  status    Status
+
+  categories Category[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  booth_id  Int
+
+  booth     Booth    @relation(fields: [booth_id], references: [id])
+  poems     Poem[]
+}
+
+model Poet {
+  id        Int      @id @default(autoincrement())
+  name      String
+  bio       String?
+  image     String?
+
+  poems     Poem[]
+}
+
+model Poem {
+  id          Int       @id @default(autoincrement())
+  name        String
+  poem_no     Int
+  poet_id     Int
+  category_id Int
+  description String?
+  text        String
+  image_url   String?
+  audio_url   String?
+
+  poet        Poet      @relation(fields: [poet_id], references: [id])
+  category    Category  @relation(fields: [category_id], references: [id])
+
+  @@unique([category_id, poem_no])
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+
